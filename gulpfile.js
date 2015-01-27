@@ -24,7 +24,7 @@ gulp.task("reload", function() {
 
 gulp.task('connect', function() {
   connect.server({
-    root: [__dirname + "/.."],
+    root: [__dirname + "/."],
         port: 3000,
     livereload: true
   });
