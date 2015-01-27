@@ -2,7 +2,8 @@ var gulp = require('gulp'),
     clean = require('gulp-clean'),
     connect = require('gulp-connect'),
     jade = require('gulp-jade'),
-    sass = require('gulp-sass');
+    sass = require('gulp-sass'),
+    open = require('gulp-open');
 
 var outputDir = ".";
 
@@ -45,6 +46,15 @@ gulp.task("sass", function() {
     .pipe(connect.reload());
 });
 
-gulp.task("default", ["jade", "sass", "watch", "connect"]);
+gulp.task('open', function () {
+  var options = {
+    url: 'http://localhost:3000/demo.html'
+  };
+
+  gulp.src('./demo.html')
+  .pipe(open('', options));
+});
+
+gulp.task("default", ["jade", "sass", "watch", "connect", "open"]);
 
 gulp.task("build", ["jade", "sass"]);
