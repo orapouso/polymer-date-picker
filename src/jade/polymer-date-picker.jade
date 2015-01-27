@@ -11,14 +11,9 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
     div(id="target" class="daterangepicker opensright")
       template(if="{{range != null}}")
         div(class="ranges" hidden?="{{!showRanges}}")
-          ul
-            li(on-click="{{todayClicked}}" class="{{ {active: (selected == 'today') } | tokenList }}") Today
-            li(on-click="{{yesterdayClicked}}" class="{{ {active: (selected == 'yesterday') } | tokenList }}") Yesterday
-            li(on-click="{{last7DaysClicked}}" class="{{ {active: (selected == 'last7Days') } | tokenList }}") Last 7 Days
-            li(on-click="{{last30DaysClicked}}" class="{{ {active: (selected == 'last30Days') } | tokenList }}") Last 30 Days
-            li(on-click="{{thisMonthClicked}}" class="{{ {active: (selected == 'thisMonth') } | tokenList }}") This Month
-            li(on-click="{{lastMonthClicked}}" class="{{ {active: (selected == 'lastMonth') } | tokenList }}") Last Month
-            li(on-click="{{customClicked}}" class="{{ {active: (selected == 'custom') } | tokenList }}") Custom
+          ul(on-click="{{rangeSelected}}")
+            template(repeat="{{ r in range }}")
+              li(data-id="{{ r.id }}" data-type="{{ r.type }}" data-period-start="{{ r.substractStart }}" data-period-end="{{ r.subtractEnd }}" class="{{ {active: (selected == r.id) } | tokenList }}") {{r.label}}
         polymer-date-picker-calendar(start startDate="{{startDate}}" endDate="{{endDate}}" hidden?="{{selected != 'custom'}}")
         polymer-date-picker-calendar(end startDate="{{startDate}}" endDate="{{endDate}}" hidden?="{{selected != 'custom'}}")
       template(if="{{range == null}}")
@@ -36,6 +31,44 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
           this.timezone = 'America/New_York';
         }
 
+        if ('range' in this.attributes) {
+          console.log('range', this.attributes['range'].value);
+
+          this.range = [{
+            id: 'today',
+            label: 'Today'
+          }, {
+            id: 'yesterday',
+            type: 'days',
+            label: 'Yesterday',
+            substractStart: 1,
+            subtractEnd: 1
+          }, {
+            id: 'last7Days',
+            type: 'days',
+            label: 'Last 7 Days',
+            substractStart: 6
+          }, {
+            id: 'last30Days',
+            type: 'days',
+            label: 'Last 30 Days',
+            substractStart: 30
+          }, {
+            id: 'thisMonth',
+            type: 'months',
+            label: 'This Month'
+          }, {
+            id: 'lastMonth',
+            type: 'months',
+            label: 'Last Month',
+            substractStart: 1,
+            subtractEnd: 1
+          }, {
+            id: 'custom',
+            label: 'Custom'
+          }]
+        }
+
         this.super();
       },
       close: function() {
@@ -45,44 +78,36 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
         if (this.timezone) return moment().tz(this.timezone);
         else return moment();
       },
-      todayClicked: function(e) {
-        this.startDate = this.format(this.newMoment());
-        this.endDate = this.format(this.newMoment());
-        this.selected = "today";
-        this.close();
-      },
-      yesterdayClicked: function() {
-        this.startDate = this.format(this.newMoment().subtract(1, "days"));
-        this.endDate = this.format(this.newMoment().subtract(1, "days"));
-        this.selected = "yesterday";
-        this.close();
-      },
-      last7DaysClicked: function() {
-        this.startDate = this.format(this.newMoment().subtract(6, "days"));
-        this.endDate = this.format(this.newMoment());
-        this.selected = "last7Days";
-        this.close();
-      },
-      last30DaysClicked: function() {
-        this.startDate = this.format(this.newMoment().subtract(30, "days"));
-        this.endDate = this.format(this.newMoment());
-        this.selected = "last30Days";
-        this.close();
-      },
-      thisMonthClicked: function() {
-        this.startDate = this.format(this.newMoment().startOf("month"));
-        this.endDate = this.format(this.newMoment().endOf("month"));
-        this.selected = "thisMonth";
-        this.close();
-      },
-      lastMonthClicked: function() {
-        this.startDate = this.format(this.newMoment().subtract(1, "months").startOf("month"));
-        this.endDate = this.format(this.newMoment().subtract(1, "months").endOf("month"));
-        this.selected = "lastMonth";
-        this.close();
-      },
-      customClicked: function() {
-        this.selected = "custom"
+      rangeSelected: function (event) {
+        var target = event.target;
+
+        var id = target.attributes['data-id'].value,
+            type = target.attributes['data-type'].value,
+            substractStart = 'data-period-start' in target.attributes ? ~~target.attributes['data-period-start'].value : 0,
+            subtractEnd = 'data-period-end' in target.attributes ? ~~target.attributes['data-period-end'].value : 0;
+
+        this.startDate = this.newMoment();
+        this.endDate = this.newMoment();
+
+        if (substractStart) {
+          this.startDate = this.startDate.subtract(substractStart, type);
+          if (subtractEnd) {
+            this.endDate = this.endDate.subtract(subtractEnd, type);
+          }
+        }
+
+        if (type === 'months') {
+          this.startDate = this.startDate.startOf('month');
+          this.endDate = this.endDate.endOf('month');
+        }
+
+        this.startDate = this.format(this.startDate);
+        this.endDate = this.format(this.endDate);
+
+        this.selected = id;
+        if ('custom' !== id) {
+          this.close();
+        }
       },
       format: function(moment) {
         return moment.format("YYYY-MM-DD");
