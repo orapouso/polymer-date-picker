@@ -8,7 +8,7 @@
     <script src="bower_components/platform/platform.js"></script>
     <link rel="import" href="polymer-date-picker.html">
     <!--container with input trigger-->
-    <polymer-element name="polymer-date-picker-trigger" attributes="range customRange newRange noRange selectedDate startDate endDate halign opened">
+    <polymer-element name="polymer-date-picker-trigger" attributes="range customRange newRange arrayRange noRange selectedDate startDate endDate halign opened">
       <template>
         <style>
           input.date {border: 1px solid #DDDDDD; background-color: #EEEEEE; color:#555555; min-width: 200px; padding: 8px 10px; margin: 10px; border-radius: 4px; }
@@ -26,6 +26,10 @@
           <polymer-date-picker id="datePicker" range startDate="{{startDate}}" endDate="{{endDate}}" relatedTarget="{{$.triggerNewRange}}" opened="{{opened}}" selected="custom" showRanges timezone="America/New_York"></polymer-date-picker>
           <input id="triggerNewRange" value="{{startDate}} to {{endDate}}" on-click="{{toggle}}" readonly class="date">
         </template>
+        <template if="{{arrayRange != null}}">
+          <polymer-date-picker id="datePicker" range startDate="{{startDate}}" endDate="{{endDate}}" relatedTarget="{{$.triggerArrayRange}}" opened="{{opened}}" selected="custom" showRanges timezone="America/New_York"></polymer-date-picker>
+          <input id="triggerArrayRange" value="{{startDate}} to {{endDate}}" on-click="{{toggle}}" readonly class="date">
+        </template>
         <template if="{{noRange != null}}">
           <polymer-date-picker id="datePicker" selectedDate="{{selectedDate}}" relatedTarget="{{$.trigger}}" opened="{{opened}}"></polymer-date-picker>
           <input id="trigger" value="{{selectedDate}}" on-click="{{toggle}}" readonly class="date">
@@ -38,6 +42,8 @@
               this._customRange();
             } else if ('newRange' in this.attributes) {
               this._newRange();
+            } else if ('arrayRange' in this.attributes) {
+              this._arrayRange();
             }
           },
           _customRange: function () {
@@ -73,6 +79,20 @@
             }
             this.$.datePicker.updateRanges();
           },
+          _arrayRange: function () {
+            this.$.datePicker.range = [{
+              label: 'Today'
+            }, {
+              label: '3 Months Ago',
+              type: 'months',
+              subtractStart: 3,
+              subtractEnd: 3
+            }, {
+              id: 'custom',
+              label: 'Custom'
+            }];
+            this.$.datePicker.updateRanges();
+          },
           toggle: function() {
               this.$.datePicker.toggle();
           },
@@ -90,8 +110,10 @@
       <polymer-date-picker-trigger range opened></polymer-date-picker-trigger>
       <h2>Datepicker container with user defined range and no custom option</h2>
       <polymer-date-picker-trigger customRange opened></polymer-date-picker-trigger>
-      <h2>Datepicker container with user redefined range</h2>
+      <h2>Datepicker container with user redefined range (must call updateRanges())</h2>
       <polymer-date-picker-trigger newRange opened></polymer-date-picker-trigger>
+      <h2>Datepicker container with array of ranges (must call updateRanges())</h2>
+      <polymer-date-picker-trigger arrayRange opened></polymer-date-picker-trigger>
       <h2>Datepicker container, not ranged</h2>
       <polymer-date-picker-trigger noRange selectedDate="2014-08-01" opened="false"></polymer-date-picker-trigger>
     </div>

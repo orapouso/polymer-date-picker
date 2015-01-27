@@ -96,7 +96,7 @@
           var id, rng;
           for (id in this.range) {
             rng = Object.create(this.range[id]);
-            rng._id = id;
+            rng._id = rng.id || id;
             this._ranges.push(rng);
           }
         },
