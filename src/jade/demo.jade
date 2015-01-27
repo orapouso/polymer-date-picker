@@ -8,7 +8,7 @@ html(lang="en")
     link(rel="import", href="polymer-date-picker.html")
 
     //container with input trigger
-    polymer-element(name="polymer-date-picker-trigger", attributes="range customRange selectedDate startDate endDate halign opened")
+    polymer-element(name="polymer-date-picker-trigger", attributes="range customRange newRange noRange selectedDate startDate endDate halign opened")
       template
         style.
           input.date {border: 1px solid #DDDDDD; background-color: #EEEEEE; color:#555555; min-width: 200px; padding: 8px 10px; margin: 10px; border-radius: 4px; }
@@ -17,35 +17,55 @@ html(lang="en")
           polymer-date-picker(id="datePicker", range, startDate="{{startDate}}", endDate="{{endDate}}", relatedTarget="{{$.triggerRange}}", opened="{{opened}}" selected="custom" showRanges="true" timezone="America/New_York")
           input(id="triggerRange", class="date", value="{{startDate}} to {{endDate}}", on-click="{{toggle}}", readonly)
         template(if="{{customRange != null}}")
-          polymer-date-picker(id="datePicker", range="{{rangeTest}}", startDate="{{startDate}}", endDate="{{endDate}}", relatedTarget="{{$.triggerCustomRange}}", opened="{{opened}}" selected="custom" showRanges="true" timezone="America/New_York")
+          polymer-date-picker(id="datePicker", range, startDate="{{startDate}}", endDate="{{endDate}}", relatedTarget="{{$.triggerCustomRange}}", opened="{{opened}}" selected="custom" showRanges timezone="America/New_York")
           input(id="triggerCustomRange", class="date", value="{{startDate}} to {{endDate}}", on-click="{{toggle}}", readonly)
-        template(if="{{range == null && customRange == null}}")
+        template(if="{{newRange != null}}")
+          polymer-date-picker(id="datePicker", range, startDate="{{startDate}}", endDate="{{endDate}}", relatedTarget="{{$.triggerNewRange}}", opened="{{opened}}" selected="custom" showRanges timezone="America/New_York")
+          input(id="triggerNewRange", class="date", value="{{startDate}} to {{endDate}}", on-click="{{toggle}}", readonly)
+        template(if="{{noRange != null}}")
           polymer-date-picker(id="datePicker", selectedDate="{{selectedDate}}", relatedTarget="{{$.trigger}}", opened="{{opened}}")
           input(id="trigger", class="date", value="{{selectedDate}}", on-click="{{toggle}}", readonly)
       script.
           Polymer('polymer-date-picker-trigger', {
             ready: function () {
+              if ('customRange' in this.attributes) {
+                this._customRange();
+              } else if ('newRange' in this.attributes) {
+                this._newRange();
+              }
+            },
+            _customRange: function () {
+              var range = this.$.datePicker.range;
+
+              //removing ranges example
+              ['last30Days', 'thisMonth', 'lastMonth', 'custom'].forEach(function (t) {
+                delete range[t];
+              });
+
               //translation example, portuguese labels
-              this.rangeTest = [{
-                id: 'today',
-                label: 'Hoje'
-              }, {
-                id: 'yesterday',
-                type: 'days',
-                label: 'Ontem',
-                substractStart: 1,
-                subtractEnd: 1
-              }, {
-                id: 'last7Days',
-                type: 'days',
-                label: 'Últimos 7 Dias',
-                substractStart: 6
-              }, {
-                id: 'last2Months',
+              range.today.label = 'Hoje';
+              range.yesterday.label = 'Ontem';
+              range.last7Days.label = 'Últimos 7 Dias';
+
+              //adding range example
+              range.last2Months = {
                 type: 'months',
                 label: 'Últimos 2 Meses',
-                substractStart: 2
-              }]
+                subtractStart: 2
+              }
+            },
+            _newRange: function () {
+              this.$.datePicker.range = {
+                threeDaysAgo: {
+                  label: '3 Days Ago',
+                  subtractStart: 3,
+                  subtractEnd: 3
+                },
+                custom: {
+                  label: 'Custom'
+                }
+              }
+              this.$.datePicker.updateRanges();
             },
             toggle: function() {
                 this.$.datePicker.toggle();
@@ -57,11 +77,14 @@ html(lang="en")
 
   body(unresolved touch-action="auto")
     div(class="container")
-        h2 Datepicker container with input trigger
-        polymer-date-picker-trigger(range, opened)
+      h2 Datepicker container with input trigger
+      polymer-date-picker-trigger(range, opened)
 
-        h2 Datepicker container with user defined range and no custom option
-        polymer-date-picker-trigger(customRange, opened)
+      h2 Datepicker container with user defined range and no custom option
+      polymer-date-picker-trigger(customRange, opened)
 
-        h2 Datepicker container, not ranged
-        polymer-date-picker-trigger(selectedDate="2014-08-01", opened="false")
+      h2 Datepicker container with user redefined range
+      polymer-date-picker-trigger(newRange, opened)
+
+      h2 Datepicker container, not ranged
+      polymer-date-picker-trigger(noRange, selectedDate="2014-08-01", opened="false")

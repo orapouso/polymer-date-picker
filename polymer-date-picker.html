@@ -11,8 +11,8 @@
       <template if="{{range != null}}">
         <div hidden?="{{!showRanges}}" class="ranges">
           <ul on-click="{{rangeSelected}}">
-            <template repeat="{{ r in range }}">
-              <li data-id="{{ r.id }}" data-type="{{ r.type }}" data-period-start="{{ r.substractStart }}" data-period-end="{{ r.subtractEnd }}" class="{{ {active: (selected == r.id) } | tokenList }}">{{r.label}}</li>
+            <template repeat="{{ r in _ranges }}">
+              <li data-id="{{ r._id }}" data-type="{{ r.type }}" data-period-start="{{ r.subtractStart }}" data-period-end="{{ r.subtractEnd }}" class="{{ {active: (selected == r._id) } | tokenList }}">{{r.label}}</li>
             </template>
           </ul>
         </div>
@@ -25,98 +25,123 @@
     </div>
   </template>
   <script>
-    Polymer("polymer-date-picker", {
-      halign: 'middle',
-      selected: "",
-      ready: function() {
-        this.target = this.$.target;
+    (function() {
+      Polymer("polymer-date-picker", {
+        halign: 'middle',
+        selected: "",
+        _ranges: [],
+        created: function () {
+          this._ranges = [];
+        },
+        ready: function() {
+          this.target = this.$.target;
     
-        this.showRanges = 'showRanges' in this.attributes;
-        if(!('timezone' in this.attributes))  {
-          this.timezone = 'America/New_York';
-        }
-    
-        if ('range' in this.attributes) {
-          console.log('range', this.attributes['range'].value);
-    
-          this.range = [{
-            id: 'today',
-            label: 'Today'
-          }, {
-            id: 'yesterday',
-            type: 'days',
-            label: 'Yesterday',
-            substractStart: 1,
-            subtractEnd: 1
-          }, {
-            id: 'last7Days',
-            type: 'days',
-            label: 'Last 7 Days',
-            substractStart: 6
-          }, {
-            id: 'last30Days',
-            type: 'days',
-            label: 'Last 30 Days',
-            substractStart: 30
-          }, {
-            id: 'thisMonth',
-            type: 'months',
-            label: 'This Month'
-          }, {
-            id: 'lastMonth',
-            type: 'months',
-            label: 'Last Month',
-            substractStart: 1,
-            subtractEnd: 1
-          }, {
-            id: 'custom',
-            label: 'Custom'
-          }]
-        }
-    
-        this.super();
-      },
-      close: function() {
-        this.opened = false;
-      },
-      newMoment: function() {
-        if (this.timezone) return moment().tz(this.timezone);
-        else return moment();
-      },
-      rangeSelected: function (event) {
-        var target = event.target;
-    
-        var id = target.attributes['data-id'].value,
-            type = target.attributes['data-type'].value,
-            substractStart = 'data-period-start' in target.attributes ? ~~target.attributes['data-period-start'].value : 0,
-            subtractEnd = 'data-period-end' in target.attributes ? ~~target.attributes['data-period-end'].value : 0;
-    
-        this.startDate = this.newMoment();
-        this.endDate = this.newMoment();
-    
-        if (substractStart) {
-          this.startDate = this.startDate.subtract(substractStart, type);
-          if (subtractEnd) {
-            this.endDate = this.endDate.subtract(subtractEnd, type);
+          this.showRanges = 'showRanges' in this.attributes;
+          if(!('timezone' in this.attributes))  {
+            this.timezone = 'America/New_York';
           }
-        }
     
-        if (type === 'months') {
-          this.startDate = this.startDate.startOf('month');
-          this.endDate = this.endDate.endOf('month');
-        }
+          if ('range' in this.attributes) {
+            console.log('range', this.attributes['range'].value);
     
-        this.startDate = this.format(this.startDate);
-        this.endDate = this.format(this.endDate);
+            //default ranges
+            this.range = {
+              today: {
+                label: 'Today'
+              }, 
+              yesterday: {
+                type: 'days',
+                label: 'Yesterday',
+                subtractStart: 1,
+                subtractEnd: 1
+              }, 
+              last7Days: {
+                type: 'days',
+                label: 'Last 7 Days',
+                subtractStart: 6
+              }, 
+              last30Days: {
+                type: 'days',
+                label: 'Last 30 Days',
+                subtractStart: 30
+              }, 
+              thisMonth: {
+                type: 'months',
+                label: 'This Month'
+              }, 
+              lastMonth: {
+                type: 'months',
+                label: 'Last Month',
+                subtractStart: 1,
+                subtractEnd: 1
+              }, 
+              custom: {
+                label: 'Custom'
+              }
+            };
     
-        this.selected = id;
-        if ('custom' !== id) {
-          this.close();
+            var obs = new ObjectObserver(this.range);
+            var updateRanges = this.updateRanges.bind(this);
+            obs.open(function () {
+              console.log('updateRanges');
+              updateRanges();
+            });
+            updateRanges();
+          }
+    
+          this.super();
+        },
+        updateRanges: function () {
+          this._ranges.length = 0;
+          var id, rng;
+          for (id in this.range) {
+            rng = Object.create(this.range[id]);
+            rng._id = id;
+            this._ranges.push(rng);
+          }
+        },
+        close: function() {
+          this.opened = false;
+        },
+        newMoment: function() {
+          if (this.timezone) return moment().tz(this.timezone);
+          else return moment();
+        },
+        rangeSelected: function (event) {
+          var target = event.target;
+    
+          var id = target.attributes['data-id'].value,
+              type = target.attributes['data-type'].value || 'days',
+              subtractStart = 'data-period-start' in target.attributes ? ~~target.attributes['data-period-start'].value : 0,
+              subtractEnd = 'data-period-end' in target.attributes ? ~~target.attributes['data-period-end'].value : 0;
+    
+          this.startDate = this.newMoment();
+          this.endDate = this.newMoment();
+    
+          if (subtractStart) {
+            this.startDate = this.startDate.subtract(subtractStart, type);
+            if (subtractEnd) {
+              this.endDate = this.endDate.subtract(subtractEnd, type);
+            }
+          }
+    
+          if (type === 'months') {
+            this.startDate = this.startDate.startOf('month');
+            this.endDate = this.endDate.endOf('month');
+          }
+    
+          this.startDate = this.format(this.startDate);
+          this.endDate = this.format(this.endDate);
+    
+          this.selected = id;
+          if ('custom' !== id) {
+            this.close();
+          }
+        },
+        format: function(moment) {
+          return moment.format("YYYY-MM-DD");
         }
-      },
-      format: function(moment) {
-        return moment.format("YYYY-MM-DD");
-      }
-    });
+      });
+    }());
   </script>
 </polymer-element>
