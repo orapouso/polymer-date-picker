@@ -30,6 +30,12 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
       selected: "",
       ready: function() {
         this.target = this.$.target;
+
+        this.showRanges = 'showRanges' in this.attributes;
+        if(!('timezone' in this.attributes))  {
+          this.timezone = 'America/New_York';
+        }
+
         this.super();
       },
       close: function() {
@@ -79,6 +85,6 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
         this.selected = "custom"
       },
       format: function(moment) {
-        return moment.tz(this.timezone).format("YYYY-MM-DD");
+        return moment.format("YYYY-MM-DD");
       }
     });
