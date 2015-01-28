@@ -25,7 +25,7 @@ gulp.task("reload", function() {
 
 gulp.task('connect', function() {
   connect.server({
-    root: [__dirname + "/."],
+    root: [__dirname + "/.."],
         port: 3000,
     livereload: true
   });
@@ -48,7 +48,7 @@ gulp.task("sass", function() {
 
 gulp.task('open', function () {
   var options = {
-    url: 'http://localhost:3000/demo.html'
+    url: 'http://localhost:3000/polymer-date-picker/demo.html'
   };
 
   gulp.src('./demo.html')

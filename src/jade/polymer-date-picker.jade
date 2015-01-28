@@ -1,9 +1,8 @@
-link(rel="import", href="bower_components/polymer/polymer.html")
+link(rel="import", href="../polymer/polymer.html")
 link(rel="import", href="polymer-date-picker-calendar.html")
 link(rel="import", href="polymer-date-picker-positioning.html")
 
-script(src="bower_components/moment/min/moment.min.js")
-script(src="bower_components/moment-timezone/builds/moment-timezone-with-data.min.js")
+script(src="../moment/min/moment.min.js")
 
 polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positioning", attributes="range selectedDate startDate endDate opened halign relatedTarget selected showRanges timezone")
   template
@@ -32,9 +31,6 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
           this.target = this.$.target;
 
           this.showRanges = 'showRanges' in this.attributes;
-          if(!('timezone' in this.attributes))  {
-            this.timezone = 'America/New_York';
-          }
 
           if ('range' in this.attributes) {
             console.log('range', this.attributes['range'].value);
@@ -99,7 +95,7 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
           this.opened = false;
         },
         newMoment: function() {
-          if (this.timezone) return moment().tz(this.timezone);
+          if (this.timezone && moment.tz) return moment().tz(this.timezone);
           else return moment();
         },
         rangeSelected: function (event) {
