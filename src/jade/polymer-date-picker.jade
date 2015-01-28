@@ -33,8 +33,6 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
           this.showRanges = 'showRanges' in this.attributes;
 
           if ('range' in this.attributes) {
-            console.log('range', this.attributes['range'].value);
-
             //default ranges
             this.range = {
               today: {
@@ -74,7 +72,6 @@ polymer-element(name="polymer-date-picker", extends="polymer-date-picker-positio
             var obs = new ObjectObserver(this.range);
             var updateRanges = this.updateRanges.bind(this);
             obs.open(function () {
-              console.log('updateRanges');
               updateRanges();
             });
             updateRanges();
