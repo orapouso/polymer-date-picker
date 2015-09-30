@@ -49,7 +49,7 @@ polymer-element(name="polymer-date-picker-calendar" attributes="start end select
       selectedDateChanged: function() {
         if (this.start) this.startDate = this.selectedDate;
         else if (this.end) this.endDate = this.selectedDate;
-        this.date = moment(this.selectedDate);
+        this.date = moment(this.selectedDate || new Date());
       },
       dateChanged: function(oldDate, newDate) {
         this.rebuildYearMonth(newDate);

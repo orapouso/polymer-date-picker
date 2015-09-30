@@ -1,4 +1,5 @@
 {
+  "version": "0.0.15",
   "devDependencies": {
     "gulp": "^3.8.7",
     "gulp-clean": "^0.3.1",
